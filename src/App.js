@@ -19,6 +19,19 @@ function App() {
   const onSave = (formData, e) => {
     e.preventDefault();
     var prevContracts = contacts;
+    var exists = false;
+    const contactId = isSave ? autoIncrementContactId() : prevContracts[index].id
+    prevContracts.forEach(function (contact, index) {
+        if (contact.id != contactId && (contact.phone==formData.phone ||  contact.email==formData.email)) {
+            exists = true;
+        }
+    })
+
+    if (exists) {
+        alert('Record already exists!');
+        return;
+    }
+
     if (isSave) {
       formData.id = autoIncrementContactId()
       formData.createdAt = new Date()
@@ -39,6 +52,8 @@ function App() {
     setValue('name', '')
     setValue('phone', '')
     setValue('email', '')
+
+    alert((isSave? 'Save': 'Update')+' successfully!')
   }
 
   const onEdit = (e, i) => {
@@ -83,7 +98,7 @@ function App() {
           <div className="card mx-auto mb-3 mt-3 shadow" style={{ width: "30rem" }}>
             <div className="card-body">
               <form onSubmit={handleSubmit(onSave)}>
-                <input type="hidden" id="txtId" value="0" />
+                <input type="hidden" name="txtId" value="0" />
                 <div className="mb-3">
                   <input type="text" className="form-control" placeholder="Name" {...register("name", { required: true })} />
                 </div>
@@ -137,7 +152,7 @@ function App() {
                 <td>{contact.createdAt.toLocaleString()}</td>
                 <td>
                   <a href='#' className="btn btn-primary" onClick={(e) => onEdit(e, `${i}`)}>Edit</a>
-                  <a href='#' className="btn btn-danger" onClick={(e) => onDelete(e, `${i}`)}>Delete</a>
+                  <a href='#' className="btn btn-danger ms-1" onClick={(e) => onDelete(e, `${i}`)}>Delete</a>
                 </td>
               </tr>
             ))
