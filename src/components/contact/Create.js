@@ -74,7 +74,7 @@ function Create(props) {
 
     useEffect(() => {
         reset(props.contact);
-    }, [props.contact]);
+    }, [props.contact, reset]);
 
     return (
         <div className="card mx-auto mb-3 mt-3 shadow" style={{ width: "30rem" }}>
