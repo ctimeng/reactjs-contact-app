@@ -1,26 +1,29 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { connect } from "react-redux";
-import { AddContact } from "../../actions";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  EditContact,
+  UpdateContact
+} from "../../actions";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-function Create(props) {
+function Edit(props) {
   const navigate = useNavigate();
+  const params = useParams();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    reset,
+  } = useForm({
+    defaultValues: useMemo(() => {
+      return props.contact;
+    }, [props]),
+  });
 
   const errorStyle = {
     color: "red",
-  };
-
-  const autoIncrementContactId = () => {
-    return props.contacts.length > 0
-      ? props.contacts[props.contacts.length - 1].id + 1
-      : 1;
   };
 
   const onSave = (formData, e) => {
@@ -31,25 +34,27 @@ function Create(props) {
       return;
     }
 
-    saveData(formData);
+    updateData(formData);
 
-    alert("Save successfully!");
+    alert("Update successfully!");
 
     navigate("/");
   };
 
-  const saveData = (formData) => {
-    formData.id = autoIncrementContactId();
-    formData.createdAt = new Date();
-    props.AddContact(formData);
+  const updateData = (formData) => {
+      let contact = props.contact;
+      contact.name = formData.name;
+      contact.phone = formData.phone;
+      contact.email = formData.email;
+      props.UpdateContact(contact);
   };
 
   const isExistsContact = (formData) => {
     let exists = false;
     props.contacts.forEach(function (contact) {
       if (
-        contact.phone === formData.phone ||
-        contact.email === formData.email
+        contact.id !== props.contact.id &&
+        (contact.phone === formData.phone || contact.email === formData.email)
       ) {
         exists = true;
       }
@@ -57,6 +62,15 @@ function Create(props) {
 
     return exists;
   };
+
+  useEffect(() => {
+    const contacts = props.contacts.filter(contact => {
+        return Number(contact.id) === Number(params.id)
+    })
+
+    props.EditContact(contacts[0])
+    reset(props.contact);
+  }, [props, reset, params]);
 
   return (
     <div className="card mx-auto mb-3 mt-3 shadow" style={{ width: "30rem" }}>
@@ -113,7 +127,7 @@ function Create(props) {
         </div>
         <div className="card-footer">
           <button type="submit" className="btn btn-success">
-            Save
+            Update
           </button>
           <Link to={{ pathname: `/` }} className="btn btn-danger float-md-end">
             Cancel
@@ -130,8 +144,9 @@ const mapStateToProps = (state) => ({
 
 function mapDispatchToProps(dispatch) {
   return {
-    AddContact: (contact) => dispatch(AddContact(contact)),
+    EditContact: (contact) => dispatch(EditContact(contact)),
+    UpdateContact: (contact) => dispatch(UpdateContact(contact)),
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Create);
+export default connect(mapStateToProps, mapDispatchToProps)(Edit);
